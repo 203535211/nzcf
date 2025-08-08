@@ -425,6 +425,10 @@
                     <div class="form-group">
                         <label>账单结束日期 (endDate)</label>
                         <input type="datetime-local" id="endDate">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="unlimitedEndDate" onchange="toggleEndDate()">
+                            <label for="unlimitedEndDate" style="display:inline; font-weight:normal;">无限期</label>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -755,9 +759,8 @@
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
-            const hour = '00';
-            const minute = '00';
-            const second = '00';
+            const hour = String(now.getHours()).padStart(2, '0'); // 获取当前小时
+            const minute = String(now.getMinutes()).padStart(2, '0'); // 获取当前分钟
             return `${year}-${month}-${day}T${hour}:${minute}`;
         }
 
@@ -824,6 +827,19 @@
             navigator.clipboard.writeText(text).then(function () {
                 alert('已复制到剪贴板！');
             });
+        }
+
+        function toggleEndDate() {
+            const unlimitedEndDateCheckbox = document.getElementById('unlimitedEndDate');
+            const endDateInput = document.getElementById('endDate');
+
+            if (unlimitedEndDateCheckbox.checked) {
+                endDateInput.disabled = true;
+                endDateInput.value = ''; // 清空当前值，因为它会被固定为无限期
+            } else {
+                endDateInput.disabled = false;
+                endDateInput.value = getNowDateTimeLocal(); // 恢复为当前日期时间
+            }
         }
 
         function toggleCustomCycle() {
@@ -911,7 +927,15 @@
 
         function generatePublicNoteJSON() {
             const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
+            const unlimitedEndDateCheckbox = document.getElementById('unlimitedEndDate');
+            let endDate;
+
+            if (unlimitedEndDateCheckbox.checked) {
+                endDate = "0000-00-00T23:59:59+08:00"; // 设置为无限期
+            } else {
+                endDate = formatDateWithTimezone(document.getElementById('endDate').value);
+            }
+
             const autoRenewal = document.getElementById('autoRenewal').value;
             const cycleSelect = document.getElementById('cycle');
             const cycleCustom = document.getElementById('cycleCustom').value;
@@ -987,7 +1011,7 @@
             const json = {
                 billingDataMod: {
                     startDate: formatDateWithTimezone(startDate),
-                    endDate: formatDateWithTimezone(endDate),
+                    endDate: endDate, // 使用经过处理的endDate
                     autoRenewal: autoRenewal,
                     cycle: cycle,
                     amount: amount
@@ -1103,6 +1127,9 @@
             }
 
             setupSystemThemeListener();
+
+            // Initialize end date checkbox state
+            toggleEndDate();
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
