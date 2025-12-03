@@ -1,0 +1,7 @@
+{
+  "name": "nzcfg",  // 自定义项目名称（如 my-single-page）
+  "compatibility_date": "2025-12-03",  // 固定当前日期，无需修改
+  "assets": {
+    "directory": "./"  // 关键：指定根目录为静态资源目录（因为 index.html 在根目录）
+  }
+}
